@@ -24,6 +24,7 @@ declare -A secrets=()
 declare -A hosts=()
 declare -a env_flags=()
 declare -a allow_flags=()
+auto_approve=false
 
 # strip leading/trailing whitespace without xargs (glob-safe)
 trim() { local s="$1"; s="${s#"${s%%[![:space:]]*}"}"; s="${s%"${s##*[![:space:]]}"}"; printf '%s' "$s"; }
@@ -50,6 +51,8 @@ if [[ -f "$ENV_FILE" ]]; then
       hosts["${key#HOSTS_}"]="$value"
     elif [[ "$key" == "ALLOW_HOSTS" || "$key" == "ALLOW_HOST" ]]; then
       add_allow_hosts "$value"
+    elif [[ "$key" == "AUTO_APPROVE" && "$value" == "true" ]]; then
+      auto_approve=true
     else
       env_flags+=(--env "$key=$value")
     fi
@@ -82,6 +85,11 @@ elif [[ -n "${HERMES_SESSION:-}" ]]; then
   hermes_cmd+=(--resume "$HERMES_SESSION")
 else
   hermes_cmd+=("$@")
+fi
+
+# --- Auto-approve: unset HERMES_INTERACTIVE inside VM ---
+if [[ "$auto_approve" == true ]]; then
+  env_flags+=(--env "HERMES_INTERACTIVE=")
 fi
 
 # --- Launch Hermes inside Gondolin micro-VM ---

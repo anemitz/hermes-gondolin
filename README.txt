@@ -36,6 +36,18 @@ Network Access
   - HOSTS_ entries are automatically allowed (no need to repeat them)
   - Use ALLOW_HOSTS=* to allow all outbound traffic
 
+Auto-Approve
+  By default, Hermes prompts for confirmation before running dangerous commands
+  (rm -rf, chmod 777, curl|sh, etc.). Since Gondolin already sandboxes execution
+  inside a micro-VM, these prompts are often redundant.
+
+  To skip approval prompts, add to secrets/provider.env:
+
+    AUTO_APPROVE=true
+
+  This unsets HERMES_INTERACTIVE inside the VM, allowing all commands to run
+  without confirmation.
+
 Prerequisites
   brew install colima docker
 
