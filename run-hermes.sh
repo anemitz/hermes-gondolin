@@ -40,13 +40,8 @@ init_stack() {
 
   chmod 600 "$STACK_DIR/secrets/provider.env" || true
 
-  cat > "$STACK_DIR/config/config.yaml" <<YAML
-terminal:
-  backend: pty
-  cwd: /workspace
-YAML
+  seed_file_if_missing "$SCRIPT_DIR/config/config.yaml.example" "$STACK_DIR/config/config.yaml"
 
-  echo "Wrote $STACK_DIR/config/config.yaml"
   echo "Stack initialized at $STACK_DIR"
 }
 
@@ -95,10 +90,9 @@ EOF
   fi
 }
 
-run_shell() {
+run_docker() {
   warn_if_no_keys
 
-  echo "Launching Hermes inside Gondolin VM..."
   docker run --rm -it \
     --name hermes \
     --platform "$PLATFORM" \
@@ -109,22 +103,8 @@ run_shell() {
     -v hermes-gondolin-cache:/root/.cache/gondolin \
     -e PROVIDER_ENV_FILE=/run/secrets/provider.env \
     -e HERMES_SESSION="${HERMES_SESSION:-}" \
-    "$IMAGE"
-}
-
-run_cmd() {
-  warn_if_no_keys
-
-  docker run --rm -it \
-    --platform "$PLATFORM" \
-    --privileged \
-    -v "$STACK_DIR/workspace:/workspace" \
-    -v "$STACK_DIR/config:/config:ro" \
-    -v "$STACK_DIR/secrets:/run/secrets:ro" \
-    -v hermes-gondolin-cache:/root/.cache/gondolin \
-    -e PROVIDER_ENV_FILE=/run/secrets/provider.env \
     -e HERMES_CMD="${HERMES_CMD:-}" \
-    "$IMAGE" run
+    "$IMAGE" "$@"
 }
 
 show_status() {
@@ -171,12 +151,12 @@ main() {
       if ! docker image inspect "$IMAGE" >/dev/null 2>&1; then
         build_image
       fi
-      run_shell
+      run_docker
       ;;
     run)
       ensure_colima_running
       set_docker_context_for_profile
-      run_cmd
+      run_docker run
       ;;
     down)
       stop_colima

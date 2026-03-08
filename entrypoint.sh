@@ -15,38 +15,51 @@ ln -sfn /workspace/sessions /root/.hermes/sessions
 ln -sfn /workspace/state.db /root/.hermes/state.db
 
 # --- Read provider.env ---
-# SECRET_<name>=<key>  → stored for --host-secret
-# HOSTS_<name>=<hosts> → comma-separated hostnames for that secret
-# Anything else        → passed as --env
+# SECRET_<name>=<key>   → stored for --host-secret
+# HOSTS_<name>=<hosts>  → comma-separated hostnames for that secret
+# ALLOW_HOST[S]=<hosts> → extra hosts to allow (no secret needed)
+# Anything else          → passed as --env
 ENV_FILE="${PROVIDER_ENV_FILE:-/run/secrets/provider.env}"
 declare -A secrets=()
 declare -A hosts=()
 declare -a env_flags=()
+declare -a allow_flags=()
+
+# strip leading/trailing whitespace without xargs (glob-safe)
+trim() { local s="$1"; s="${s#"${s%%[![:space:]]*}"}"; s="${s%"${s##*[![:space:]]}"}"; printf '%s' "$s"; }
+
+# split comma-separated values into --allow-host flags
+add_allow_hosts() {
+  IFS=',' read -ra items <<< "$1"
+  for h in "${items[@]}"; do
+    h="$(trim "$h")"
+    [[ -n "$h" ]] && allow_flags+=(--allow-host "$h")
+  done
+}
 
 if [[ -f "$ENV_FILE" ]]; then
   while IFS='=' read -r key value; do
     [[ -z "$key" || "$key" =~ ^[[:space:]]*# ]] && continue
-    key="$(echo "$key" | xargs)"
-    value="$(echo "$value" | xargs)"
+    key="$(trim "$key")"
+    value="$(trim "$value")"
     [[ -z "$key" || -z "$value" ]] && continue
 
     if [[ "$key" == SECRET_* ]]; then
-      name="${key#SECRET_}"
-      secrets["$name"]="$value"
+      secrets["${key#SECRET_}"]="$value"
     elif [[ "$key" == HOSTS_* ]]; then
-      name="${key#HOSTS_}"
-      hosts["$name"]="$value"
+      hosts["${key#HOSTS_}"]="$value"
+    elif [[ "$key" == "ALLOW_HOSTS" || "$key" == "ALLOW_HOST" ]]; then
+      add_allow_hosts "$value"
     else
       env_flags+=(--env "$key=$value")
     fi
   done < "$ENV_FILE"
 fi
 
-# --- Build --host-secret flags from paired SECRET_/HOSTS_ entries ---
+# --- Build --host-secret flags and auto-allow secret hosts ---
 declare -a secret_flags=()
 
 for name in "${!secrets[@]}"; do
-  secret_val="${secrets[$name]}"
   host_list="${hosts[$name]:-}"
   if [[ -z "$host_list" ]]; then
     echo "WARNING: SECRET_${name} has no matching HOSTS_${name} — skipping" >&2
@@ -54,16 +67,16 @@ for name in "${!secrets[@]}"; do
   fi
   IFS=',' read -ra host_array <<< "$host_list"
   for host in "${host_array[@]}"; do
-    host="$(echo "$host" | xargs)"
+    host="$(trim "$host")"
     [[ -z "$host" ]] && continue
-    secret_flags+=(--host-secret "${name}@${host}=${secret_val}")
+    secret_flags+=(--host-secret "${name}@${host}=${secrets[$name]}")
+    allow_flags+=(--allow-host "$host")
   done
 done
 
 # --- Build hermes command ---
 declare -a hermes_cmd=(/usr/local/bin/hermes)
 if [[ "$1" == "run" ]]; then
-  # Pass HERMES_CMD args directly to hermes (e.g., "sessions", "--help")
   hermes_cmd+=($HERMES_CMD)
 elif [[ -n "${HERMES_SESSION:-}" ]]; then
   hermes_cmd+=(--resume "$HERMES_SESSION")
@@ -74,6 +87,7 @@ fi
 # --- Launch Hermes inside Gondolin micro-VM ---
 exec gondolin bash \
   "${secret_flags[@]}" \
+  "${allow_flags[@]}" \
   "${env_flags[@]}" \
   --mount-hostfs /opt/hermes-agent:/opt/hermes-agent \
   --mount-hostfs /workspace:/workspace \

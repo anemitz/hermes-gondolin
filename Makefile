@@ -4,6 +4,8 @@ STACK_DIR ?= $(CURDIR)
 IMAGE ?= hermes-gondolin:latest
 COLIMA_PROFILE ?= hermes
 
+export STACK_DIR IMAGE COLIMA_PROFILE
+
 .PHONY: help init build up shell down restart status clean nuke
 
 help:
@@ -19,31 +21,31 @@ help:
 	@echo "  make nuke    - delete Colima profile (destructive)"
 
 init:
-	STACK_DIR="$(STACK_DIR)" COLIMA_PROFILE="$(COLIMA_PROFILE)" IMAGE="$(IMAGE)" ./run-hermes.sh init
+	./run-hermes.sh init
 
 build:
-	STACK_DIR="$(STACK_DIR)" COLIMA_PROFILE="$(COLIMA_PROFILE)" IMAGE="$(IMAGE)" ./run-hermes.sh build
+	./run-hermes.sh build
 
 up: init build
-	STACK_DIR="$(STACK_DIR)" COLIMA_PROFILE="$(COLIMA_PROFILE)" IMAGE="$(IMAGE)" ./run-hermes.sh shell
+	./run-hermes.sh shell
 
 shell:
-	STACK_DIR="$(STACK_DIR)" COLIMA_PROFILE="$(COLIMA_PROFILE)" IMAGE="$(IMAGE)" HERMES_SESSION="$(filter-out $@,$(MAKECMDGOALS))" ./run-hermes.sh shell
+	HERMES_SESSION="$(filter-out $@,$(MAKECMDGOALS))" ./run-hermes.sh shell
 
 run:
-	STACK_DIR="$(STACK_DIR)" COLIMA_PROFILE="$(COLIMA_PROFILE)" IMAGE="$(IMAGE)" HERMES_CMD="$(filter-out $@,$(MAKECMDGOALS))" ./run-hermes.sh run
+	HERMES_CMD="$(filter-out $@,$(MAKECMDGOALS))" ./run-hermes.sh run
 
 %:
 	@:
 
 down:
-	STACK_DIR="$(STACK_DIR)" COLIMA_PROFILE="$(COLIMA_PROFILE)" IMAGE="$(IMAGE)" ./run-hermes.sh down
+	./run-hermes.sh down
 
 restart:
-	STACK_DIR="$(STACK_DIR)" COLIMA_PROFILE="$(COLIMA_PROFILE)" IMAGE="$(IMAGE)" ./run-hermes.sh restart
+	./run-hermes.sh restart
 
 status:
-	STACK_DIR="$(STACK_DIR)" COLIMA_PROFILE="$(COLIMA_PROFILE)" IMAGE="$(IMAGE)" ./run-hermes.sh status
+	./run-hermes.sh status
 
 clean:
 	docker image rm -f "$(IMAGE)" || true

@@ -1,0 +1,3 @@
+terminal:
+  backend: local
+  cwd: /workspace
