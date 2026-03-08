@@ -112,6 +112,21 @@ run_shell() {
     "$IMAGE"
 }
 
+run_cmd() {
+  warn_if_no_keys
+
+  docker run --rm -it \
+    --platform "$PLATFORM" \
+    --privileged \
+    -v "$STACK_DIR/workspace:/workspace" \
+    -v "$STACK_DIR/config:/config:ro" \
+    -v "$STACK_DIR/secrets:/run/secrets:ro" \
+    -v hermes-gondolin-cache:/root/.cache/gondolin \
+    -e PROVIDER_ENV_FILE=/run/secrets/provider.env \
+    -e HERMES_CMD="${HERMES_CMD:-}" \
+    "$IMAGE" run
+}
+
 show_status() {
   echo "Colima status:"
   colima status --profile "$COLIMA_PROFILE" || true
@@ -158,6 +173,11 @@ main() {
       fi
       run_shell
       ;;
+    run)
+      ensure_colima_running
+      set_docker_context_for_profile
+      run_cmd
+      ;;
     down)
       stop_colima
       ;;
@@ -170,7 +190,7 @@ main() {
       show_status
       ;;
     *)
-      echo "Usage: $0 {init|build|shell|down|restart|status}"
+      echo "Usage: $0 {init|build|shell|run|down|restart|status}"
       exit 1
       ;;
   esac

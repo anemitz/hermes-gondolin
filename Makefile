@@ -30,6 +30,9 @@ up: init build
 shell:
 	STACK_DIR="$(STACK_DIR)" COLIMA_PROFILE="$(COLIMA_PROFILE)" IMAGE="$(IMAGE)" HERMES_SESSION="$(filter-out $@,$(MAKECMDGOALS))" ./run-hermes.sh shell
 
+run:
+	STACK_DIR="$(STACK_DIR)" COLIMA_PROFILE="$(COLIMA_PROFILE)" IMAGE="$(IMAGE)" HERMES_CMD="$(filter-out $@,$(MAKECMDGOALS))" ./run-hermes.sh run
+
 %:
 	@:
 

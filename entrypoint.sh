@@ -9,9 +9,10 @@ if [[ -f /config/config.yaml ]]; then
   cp /config/config.yaml /opt/hermes-agent/cli-config.yaml
 fi
 
-# --- Persist sessions to /workspace ---
+# --- Persist hermes state to /workspace ---
 mkdir -p /workspace/sessions
 ln -sfn /workspace/sessions /root/.hermes/sessions
+ln -sfn /workspace/state.db /root/.hermes/state.db
 
 # --- Read provider.env ---
 # SECRET_<name>=<key>  → stored for --host-secret
@@ -61,7 +62,10 @@ done
 
 # --- Build hermes command ---
 declare -a hermes_cmd=(/usr/local/bin/hermes)
-if [[ -n "${HERMES_SESSION:-}" ]]; then
+if [[ "$1" == "run" ]]; then
+  # Pass HERMES_CMD args directly to hermes (e.g., "sessions", "--help")
+  hermes_cmd+=($HERMES_CMD)
+elif [[ -n "${HERMES_SESSION:-}" ]]; then
   hermes_cmd+=(--resume "$HERMES_SESSION")
 else
   hermes_cmd+=("$@")
@@ -77,5 +81,6 @@ exec gondolin bash \
   --mount-hostfs /usr/local/bin:/usr/local/bin:ro \
   --mount-hostfs /usr/local/lib:/usr/local/lib:ro \
   --mount-hostfs /usr/lib:/usr/lib:ro \
+  --mount-hostfs /usr/libexec/git-core:/usr/libexec/git-core:ro \
   -- \
   "${hermes_cmd[@]}"

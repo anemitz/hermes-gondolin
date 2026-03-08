@@ -23,6 +23,9 @@ WORKDIR /opt/hermes-agent
 RUN pip install --no-cache-dir -e ".[mcp,pty]" \
  && pip install --no-cache-dir -e "./mini-swe-agent"
 
+# Symlink git into /usr/local/bin so it's available inside the Gondolin VM
+RUN ln -s /usr/bin/git /usr/local/bin/git
+
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod 0755 /usr/local/bin/entrypoint.sh
 
