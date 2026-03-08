@@ -4,7 +4,7 @@ Architecture
   macOS (Apple Silicon)
     -> Colima VM (Linux, VZ framework, nested virtualization)
       -> Docker container (python:3.11-alpine + QEMU + Gondolin)
-        -> Gondolin micro-VM (QEMU/TCG, Alpine guest)
+        -> Gondolin micro-VM
           -> Hermes runs here
         <- Gondolin HTTP proxy injects secrets only for allowed API hosts
 
