@@ -14,6 +14,13 @@ mkdir -p /workspace/sessions
 ln -sfn /workspace/sessions /root/.hermes/sessions
 ln -sfn /workspace/state.db /root/.hermes/state.db
 
+# --- Persist memories and soul to /workspace ---
+mkdir -p /workspace/memories
+ln -sfn /workspace/memories /root/.hermes/memories
+if [[ -f /workspace/SOUL.md ]]; then
+  ln -sfn /workspace/SOUL.md /root/.hermes/SOUL.md
+fi
+
 # --- Read provider.env ---
 # SECRET_<name>=<key>   → stored for --host-secret
 # HOSTS_<name>=<hosts>  → comma-separated hostnames for that secret
