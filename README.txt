@@ -45,8 +45,8 @@ Auto-Approve
 
     AUTO_APPROVE=true
 
-  This unsets HERMES_INTERACTIVE inside the VM, allowing all commands to run
-  without confirmation.
+  When set, HERMES_INTERACTIVE is not passed into the VM, so Hermes skips
+  its dangerous-command approval prompts.
 
 Prerequisites
   brew install colima docker

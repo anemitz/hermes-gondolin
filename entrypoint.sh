@@ -87,9 +87,9 @@ else
   hermes_cmd+=("$@")
 fi
 
-# --- Auto-approve: unset HERMES_INTERACTIVE inside VM ---
+# --- Auto-approve: remove hardcoded HERMES_INTERACTIVE from cli.py ---
 if [[ "$auto_approve" == true ]]; then
-  env_flags+=(--env "HERMES_INTERACTIVE=")
+  sed -i '/os\.environ\[.HERMES_INTERACTIVE.\]/d' /opt/hermes-agent/cli.py
 fi
 
 # --- Launch Hermes inside Gondolin micro-VM ---
