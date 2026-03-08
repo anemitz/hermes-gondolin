@@ -1,0 +1,5 @@
+secrets/provider.env
+workspace
+.git
+__pycache__
+*.pyc
