@@ -24,6 +24,18 @@ Secret Handling
   - Non-SECRET_ lines are passed as plain --env vars (do NOT put
     secrets in these; they are visible inside the VM)
 
+Network Access
+  By default, the Gondolin VM can only reach hosts listed in HOSTS_ entries.
+  To allow additional outbound HTTP/HTTPS traffic, add an ALLOW_HOSTS line
+  to secrets/provider.env:
+
+    ALLOW_HOSTS=github.com,*.github.com,pypi.org
+
+  - Comma-separated list of hostnames or patterns
+  - Wildcard patterns supported (e.g. *.example.com matches sub.example.com)
+  - HOSTS_ entries are automatically allowed (no need to repeat them)
+  - Use ALLOW_HOSTS=* to allow all outbound traffic
+
 Prerequisites
   brew install colima docker
 
