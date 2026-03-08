@@ -36,6 +36,17 @@ Network Access
   - HOSTS_ entries are automatically allowed (no need to repeat them)
   - Use ALLOW_HOSTS=* to allow all outbound traffic
 
+GitHub Integration
+  To use git or the gh CLI with private repos, add a GitHub PAT to
+  secrets/provider.env:
+
+    SECRET_GITHUB_TOKEN=ghp_...
+    HOSTS_GITHUB_TOKEN=github.com,api.github.com
+
+  Use GITHUB_TOKEN as the name so Gondolin creates a GITHUB_TOKEN env var
+  inside the VM, which gh CLI reads automatically. Gondolin's proxy injects
+  the real token into HTTP requests to those hosts.
+
 Auto-Approve
   By default, Hermes prompts for confirmation before running dangerous commands
   (rm -rf, chmod 777, curl|sh, etc.). Since Gondolin already sandboxes execution

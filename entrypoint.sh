@@ -68,11 +68,11 @@ for name in "${!secrets[@]}"; do
     echo "WARNING: SECRET_${name} has no matching HOSTS_${name} — skipping" >&2
     continue
   fi
+  secret_flags+=(--host-secret "${name}@${host_list}=${secrets[$name]}")
   IFS=',' read -ra host_array <<< "$host_list"
   for host in "${host_array[@]}"; do
     host="$(trim "$host")"
     [[ -z "$host" ]] && continue
-    secret_flags+=(--host-secret "${name}@${host}=${secrets[$name]}")
     allow_flags+=(--allow-host "$host")
   done
 done

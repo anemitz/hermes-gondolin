@@ -9,6 +9,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 # System deps: git, curl, QEMU (TCG for ARM64), Node.js, build tools for pip packages
 RUN apk add --no-cache \
     git curl ca-certificates bash \
+    github-cli \
     qemu-system-aarch64 qemu-img \
     nodejs npm \
     gcc musl-dev linux-headers libffi-dev
@@ -24,8 +25,10 @@ RUN pip install --no-cache-dir -e ".[mcp,pty]" \
  && pip install --no-cache-dir -e "./mini-swe-agent"
 
 
-# Symlink git into /usr/local/bin so it's available inside the Gondolin VM
-RUN ln -s /usr/bin/git /usr/local/bin/git
+# Copy git and gh into /usr/local/bin so they are available inside the
+# Gondolin VM (which mounts /usr/local/bin but not /usr/bin)
+RUN cp /usr/bin/git /usr/local/bin/git && \
+    cp /usr/bin/gh /usr/local/bin/gh
 
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod 0755 /usr/local/bin/entrypoint.sh
