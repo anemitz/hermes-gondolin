@@ -4,7 +4,7 @@ Architecture
   macOS (Apple Silicon)
     -> Colima VM (Linux, VZ framework, nested virtualization)
       -> Docker container (python:3.11-alpine + QEMU + Gondolin)
-        -> Gondolin micro-VM (QEMU/TCG, Alpine guest)
+        -> Gondolin micro-VM
           -> Hermes runs here
         <- Gondolin HTTP proxy injects secrets only for allowed API hosts
 
@@ -14,12 +14,9 @@ Secret Handling
     SECRET_<NAME>=<api-key>
     HOSTS_<NAME>=<comma-separated hostnames>
 
-  Examples:
-    SECRET_OPENAI=sk-...
-    HOSTS_OPENAI=api.openai.com
-
-    SECRET_OPENROUTER=sk-or-...
-    HOSTS_OPENROUTER=openrouter.ai
+  Example:
+    SECRET_OPENAI_API_KEY=sk-...
+    HOSTS_OPENAI_API_KEY=api.openai.com
 
   - SECRET_ keys are passed via --host-secret to Gondolin
   - The agent never sees the real key; Gondolin's proxy injects it
