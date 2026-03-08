@@ -14,12 +14,9 @@ Secret Handling
     SECRET_<NAME>=<api-key>
     HOSTS_<NAME>=<comma-separated hostnames>
 
-  Examples:
-    SECRET_OPENAI=sk-...
-    HOSTS_OPENAI=api.openai.com
-
-    SECRET_OPENROUTER=sk-or-...
-    HOSTS_OPENROUTER=openrouter.ai
+  Example:
+    SECRET_OPENAI_API_KEY=sk-...
+    HOSTS_OPENAI_API_KEY=api.openai.com
 
   - SECRET_ keys are passed via --host-secret to Gondolin
   - The agent never sees the real key; Gondolin's proxy injects it
